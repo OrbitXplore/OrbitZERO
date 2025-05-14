@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="styles.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="icon" type="logo" href="logo.png">>
+<title>OrbitZERO</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+  body {
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+    background: linear-gradient(110deg, rgba(42, 38, 54, 0.1), rgba(17, 11, 29, 0.7)), url('images/bg.png');
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    color: #fff;
+  }
+  #game-container {
+    position: relative;
+    width: 90%;
+    max-width: 320px;
+    text-align: center;
+  }
+  h1 {
+    font-weight: 700;
+    margin-bottom: 16px;
+    text-shadow: 0 0 8px #00d4ff;
+    font-size: 1.6rem;
+  }
+  #start-btn {
+    padding: 10px 24px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 24px;
+    background: rgba(34, 37, 78, 0.514);
+    color: #dcdcdf;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-weight: 700;
+    box-shadow: 0 0 10px #ffffff;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    max-width: 280px;
+  }
+  #start-btn:hover {
+    background: #0077b6;
+    color: #a0f2ff;
+  }
+  /* Overlay for popup */
+  #overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+   
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    backdrop-filter: blur(6px);
+  }
+  #quiz-popup {
+    background: #02214b;
+    border-radius: 12px;
+    padding: 18px 22px;
+    width: 90%;
+    max-width: 320px;
+    box-shadow: 0 0 24px #00d4ffcc;
+    position: relative;
+    animation: popupIn 0.35s ease forwards;
+  }
+  @keyframes popupIn {
+    from {transform: scale(0.95) translateY(28px); opacity: 0;}
+    to {transform: scale(1) translateY(0); opacity: 1;}
+  }
+  #question-count {
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-bottom: 12px;
+    text-shadow: 0 0 3px #00c3ff;
+  }
+  #question-text {
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+    text-shadow: 0 0 6px #00d4ffaa;
+    min-height: 54px;
+  }
+  ul#options {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 24px 0;
+  }
+  ul#options li {
+    background: #004080;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+    user-select: none;
+  }
+  ul#options li:hover {
+    background: #0077b6;
+    box-shadow: 0 0 10px #00e3ffaa;
+  }
+  ul#options li.selected {
+    background: #00d4ff;
+    color: #02214b;
+    box-shadow: 0 0 12px #00e3ffee;
+  }
+  ul#options li.correct {
+    background: #28a745;
+    color: white;
+    box-shadow: 0 0 12px #28a745dd;
+  }
+  ul#options li.incorrect {
+    background: #dc3545;
+    color: white;
+    box-shadow: 0 0 12px #dc3545dd;
+  }
+  #submit-btn {
+    background: #00d4ff;
+    border: none;
+    outline: none;
+    color: #02214b;
+    font-weight: 700;
+    padding: 12px 24px;
+    font-size: 1rem;
+    border-radius: 24px;
+    cursor: pointer;
+    box-shadow: 0 0 12px #00d4ffcc;
+    transition: background 0.3s ease;
+    user-select: none;
+    width: 100%;
+    max-width: 280px;
+  }
+  #submit-btn:disabled {
+    background: #026a9d;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+  #final-score {
+    font-weight: 700;
+    font-size: 1.25rem;
+    margin-top: 18px;
+    text-align: center;
+    text-shadow: 0 0 6px #00d4ffcc;
+  }
+  #close-btn {
+    position: absolute;
+    top: 10px;
+    right: 14px;
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    color: #00d4ffcc;
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.3s ease;
+  }
+  #close-btn:hover {
+    color: #ffffff;
+  }
+</style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo"><a href="planet.html">ORBIT<b>ZERO</b></a></div>
+            
+            <input type="checkbox" id="check">
+            <label for="check" class="icons">
+                <i class='bx bx-menu' id="menu-icon"></i>
+                <i class='bx bx-x' id="close-icon" ></i>
+    
+            </label>
+        <nav class="navbar">
+            <a href="index.html">HOME</a>
+    
+            <a href="planet.html"><i class='bx bx-planet' id="nav-icons"></i>PLANET</a>
+            <a href="quiz.html"><i class='bx  bx-pen-alt'  id="nav-icons"></i>Quiz</a>
+            <a href="about-us.html"><i class='bx bx-group' id="nav-icons"></i>ABOUT US</a>
+            
+        </nav>
+    </header>
+
+<div id="game-container" role="main" aria-label="Solar System Quiz Mini Game">
+  <h1>Pop Quiz</h1>
+  <button id="start-btn" aria-label="Start Quiz">Start Quiz</button>
+</div>
+
+<div id="overlay" role="dialog" aria-modal="true" aria-labelledby="question-text" aria-describedby="question-count">
+  <div id="quiz-popup">
+    <button id="close-btn" aria-label="Close quiz popup">&times;</button>
+    <div id="question-count"></div>
+    <div id="question-text"></div>
+    <ul id="options" role="list"></ul>
+    <button id="submit-btn" disabled aria-label="Submit answer">Submit Answer</button>
+    <div id="final-score" aria-live="polite"></div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    // 50+ Solar system related questions
+    const questions = [
+      {q:"Which planet is closest to the sun?", choices:["Venus", "Mercury", "Earth", "Mars"], answer:1},
+      {q:"How many planets are in our Solar System?", choices:["7", "8", "9", "10"], answer:1},
+      {q:"Which planet is known for its beautiful rings?", choices:["Jupiter", "Saturn", "Uranus", "Neptune"], answer:1},
+      {q:"What is the largest planet in the Solar System?", choices:["Jupiter", "Saturn", "Earth", "Neptune"], answer:0},
+      {q:"Which planet is known as the Red Planet?", choices:["Mars", "Venus", "Mercury", "Jupiter"], answer:0},
+      {q:"What celestial body orbits a planet?", choices:["Star", "Moon", "Comet", "Asteroid"], answer:1},
+      {q:"Which planet spins on its side, causing extreme seasons?", choices:["Uranus", "Neptune", "Mars", "Venus"], answer:0},
+      {q:"What is the hottest planet in our Solar System?", choices:["Venus", "Mercury", "Mars", "Jupiter"], answer:0},
+      {q:"How many moons does Mars have?", choices:["1", "2", "3", "4"], answer:1},
+      {q:"Which planet has the shortest day?", choices:["Jupiter", "Earth", "Saturn", "Mars"], answer:0},
+      {q:"What is the name of Earth's moon?", choices:["Luna", "Titan", "Europa", "Phobos"], answer:0},
+      {q:"Which planet is known as Earth’s 'sister planet'?", choices:["Venus", "Mars", "Mercury", "Neptune"], answer:0},
+      {q:"Which planet has a Great Red Spot?", choices:["Saturn", "Jupiter", "Uranus", "Earth"], answer:1},
+      {q:"Which planet’s atmosphere is mostly carbon dioxide?", choices:["Earth", "Venus", "Mars", "Jupiter"], answer:2},
+      {q:"What galaxy is Earth located in?", choices:["Andromeda", "Milky Way", "Sombrero", "Whirlpool"], answer:1},
+      {q:"What is the smallest planet in the Solar System?", choices:["Mercury", "Mars", "Venus", "Earth"], answer:0},
+      {q:"What planet is famous for its blue color and strong winds?", choices:["Neptune", "Uranus", "Earth", "Saturn"], answer:0},
+      {q:"Which is called the 'Morning Star' or 'Evening Star'?", choices:["Mars", "Venus", "Jupiter", "Mercury"], answer:1},
+      {q:"What do we call the path a planet follows around the sun?", choices:["Orbit", "Rotation", "Axis", "Spin"], answer:0},
+      {q:"How long does it take Earth to orbit the sun?", choices:["365 days", "30 days", "24 hours", "1 year and 6 months"], answer:0},
+      {q:"Which planet is known for having a faint ring system?", choices:["Uranus", "Earth", "Mars", "Venus"], answer:0},
+      {q:"Which is the coldest planet in our Solar System?", choices:["Uranus", "Neptune", "Saturn", "Mercury"], answer:0},
+      {q:"What’s the name of the largest moon of Saturn?", choices:["Titan", "Europa", "Ganymede", "Callisto"], answer:0},
+      {q:"What is the energy source of the Solar System?", choices:["Moon", "Sun", "Earth", "Jupiter"], answer:1},
+      {q:"What planet is famous for its giant storm called the Great Dark Spot?", choices:["Neptune", "Saturn", "Jupiter", "Mars"], answer:0},
+      {q:"What is an asteroid?", choices:["A small rocky body orbiting the sun", "A type of comet", "A moon", "A planet"], answer:0},
+      {q:"Which planet has the longest day?", choices:["Venus", "Earth", "Mercury", "Mars"], answer:0},
+      {q:"What do we call space debris that burns in Earth's atmosphere?", choices:["Comets", "Meteors", "Planets", "Stars"], answer:1},
+      {q:"Which planet has the most moons?", choices:["Jupiter", "Saturn", "Uranus", "Neptune"], answer:0},
+      {q:"Which dwarf planet is located in the Kuiper Belt?", choices:["Pluto", "Ceres", "Eris", "Haumea"], answer:0},
+      {q:"Which planet’s axis tilt causes extreme seasonal changes?", choices:["Uranus", "Venus", "Saturn", "Earth"], answer:0},
+      {q:"What is a comet mainly made of?", choices:["Rock and ice", "Gas", "Only ice", "Only rock"], answer:0},
+      {q:"Which planet is nicknamed the 'Gas Giant'?", choices:["Mars", "Jupiter", "Saturn", "Earth"], answer:1},
+      {q:"What is the name of the rover currently on Mars? (as of 2024)", choices:["Spirit", "Curiosity", "Perseverance", "Opportunity"], answer:2},
+      {q:"What is the Kuiper Belt?", choices:["A region of the solar system beyond Neptune filled with icy bodies", "The asteroid belt", "The sun’s outer layer", "A ring around Saturn"], answer:0},
+      {q:"Which planet was downgraded to a dwarf planet in 2006?", choices:["Neptune", "Pluto", "Uranus", "Eris"], answer:1},
+      {q:"Which planet has clouds made mostly of sulfuric acid?", choices:["Venus", "Mercury", "Mars", "Jupiter"], answer:0},
+      {q:"How many rings does Saturn have?", choices:["1", "7", "3", "Thousands"], answer:3},
+      {q:"Which planet has a moon called Phobos?", choices:["Mars", "Earth", "Jupiter", "Saturn"], answer:0},
+      {q:"What force keeps the planets in orbit around the sun?", choices:["Magnetism", "Gravity", "Electricity", "Friction"], answer:1},
+      {q:"What planet has a magnetic field stronger than Earth’s?", choices:["Jupiter", "Mars", "Venus", "Saturn"], answer:0},
+      {q:"What is the name of the largest moon in the solar system?", choices:["Titan", "Ganymede", "Callisto", "Europa"], answer:1},
+      {q:"Which planet is sometimes called the 'Ice Giant'?", choices:["Uranus", "Saturn", "Neptune", "Jupiter"], answer:2},
+      {q:"Which planet is named after the Roman god of the sea?", choices:["Neptune", "Mars", "Venus", "Mercury"], answer:0},
+      {q:"What year did humans first land on the Moon?", choices:["1967", "1969", "1971", "1973"], answer:1},
+      {q:"Which planet’s day is longer than its year?", choices:["Venus", "Mercury", "Mars", "Earth"], answer:0},
+      {q:"What is the sun primarily made of?", choices:["Rock and metal", "Hydrogen and helium", "Oxygen and nitrogen", "Carbon dioxide"], answer:1},
+      {q:"Where is the asteroid belt located?", choices:["Between Mars and Jupiter", "Between Earth and Mars", "Between Jupiter and Saturn", "Between Venus and Earth"], answer:0},
+      {q:"How fast does light from the sun reach Earth?", choices:["8 minutes", "1 minute", "30 minutes", "24 hours"], answer:0},
+    ];
+
+    // Elements
+    const startBtn = document.getElementById('start-btn');
+    const overlay = document.getElementById('overlay');
+    const questionCountElem = document.getElementById('question-count');
+    const questionTextElem = document.getElementById('question-text');
+    const optionsList = document.getElementById('options');
+    const submitBtn = document.getElementById('submit-btn');
+    const finalScoreElem = document.getElementById('final-score');
+    const closeBtn = document.getElementById('close-btn');
+
+    // Game state
+    let selectedQuestions = [];
+    let currentQuestionIndex = 0;
+    let selectedAnswer = null;
+    const totalQuestionsPerGame = 10;
+    let score = 0;
+
+    // Utility to shuffle an array
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function startGame() {
+      score = 0;
+      currentQuestionIndex = 0;
+      selectedAnswer = null;
+      finalScoreElem.textContent = '';
+      submitBtn.style.display = 'inline-block';
+      closeBtn.style.display = 'none';
+      // Pick 10 random questions from question bank
+      selectedQuestions = shuffleArray(questions.slice()).slice(0, totalQuestionsPerGame);
+      overlay.style.display = 'flex';
+      renderQuestion();
+    }
+
+    function renderQuestion() {
+      selectedAnswer = null;
+      submitBtn.disabled = true;
+      const q = selectedQuestions[currentQuestionIndex];
+      questionCountElem.textContent = `Question ${currentQuestionIndex + 1} of ${totalQuestionsPerGame}`;
+      questionTextElem.textContent = q.q;
+      optionsList.innerHTML = '';
+
+      q.choices.forEach((choice, i) => {
+        const li = document.createElement('li');
+        li.textContent = choice;
+        li.setAttribute('tabindex',0);
+        li.setAttribute('role','button');
+        li.className = '';
+        li.addEventListener('click', () => selectOption(i));
+        li.addEventListener('keydown', e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            selectOption(i);
+          }
+        });
+        optionsList.appendChild(li);
+      });
+
+      finalScoreElem.textContent = '';
+    }
+
+    function selectOption(idx) {
+      if (selectedAnswer !== null) return;
+      selectedAnswer = idx;
+      Array.from(optionsList.children).forEach((li, i) => {
+        li.classList.toggle('selected', i === idx);
+      });
+      submitBtn.disabled = false;
+    }
+
+    function submitAnswer() {
+      if (selectedAnswer === null) return;
+
+      const q = selectedQuestions[currentQuestionIndex];
+
+      Array.from(optionsList.children).forEach((li, i) => {
+        li.classList.remove('selected');
+        if (i === q.answer) {
+          li.classList.add('correct');
+        } else if (i === selectedAnswer) {
+          li.classList.add('incorrect');
+        }
+      });
+
+      if (selectedAnswer === q.answer) {
+        score++;
+      }
+
+      submitBtn.disabled = true;
+
+      setTimeout(() => {
+        currentQuestionIndex++;
+        if (currentQuestionIndex >= totalQuestionsPerGame) {
+          endGame();
+        } else {
+          renderQuestion();
+        }
+      }, 1500);
+    }
+
+    function endGame() {
+      questionCountElem.textContent = 'Quiz Complete!';
+      questionTextElem.textContent = '';
+      optionsList.innerHTML = '';
+      finalScoreElem.textContent = `You scored ${score} out of ${totalQuestionsPerGame}! 🎉`;
+      submitBtn.style.display = 'none';
+      closeBtn.style.display = 'inline-block';
+      closeBtn.focus();
+    }
+
+    function resetGame() {
+      selectedQuestions = [];
+      currentQuestionIndex = 0;
+      score = 0;
+      selectedAnswer = null;
+      submitBtn.disabled = true;
+      finalScoreElem.textContent = '';
+      submitBtn.style.display = 'inline-block';
+      closeBtn.style.display = 'none';
+    }
+
+    startBtn.addEventListener('click', startGame);
+
+    submitBtn.addEventListener('click', submitAnswer);
+
+    closeBtn.addEventListener('click', () => {
+      overlay.style.display = 'none';
+      resetGame();
+    });
+
+    // Accessibility: close popup with Escape key
+    window.addEventListener('keydown', (e) => {
+      if (e.key === "Escape" && overlay.style.display === 'flex') {
+        overlay.style.display = 'none';
+        resetGame();
+      }
+    });
+
+  })();
+</script>
+</body>
+</html>
+
